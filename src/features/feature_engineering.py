@@ -2,7 +2,7 @@ import os
 import yaml
 import pandas as pd
 import logging
-from sklearn.feature_extraction.text import TfidfVectorizer   # ⬅️ changed here
+from sklearn.feature_extraction.text import CountVectorizer
 
 # ----------------------------------
 # Logging setup
@@ -67,33 +67,33 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
         raise
 
 
-def create_tfidf_features(train_data: pd.DataFrame, test_data: pd.DataFrame, max_features: int):
-    """Generate TF-IDF features"""
+def create_bow_features(train_data: pd.DataFrame, test_data: pd.DataFrame, max_features: int):
+    """Generate Bag of Words features"""
     try:
-        vectorizer = TfidfVectorizer(max_features=max_features)   # ⬅️ changed here
+        vectorizer = CountVectorizer(max_features=max_features)
 
-        X_train_tfidf = vectorizer.fit_transform(train_data["processed"].values)
-        X_test_tfidf = vectorizer.transform(test_data["processed"].values)
+        X_train_bow = vectorizer.fit_transform(train_data["processed"].values)
+        X_test_bow = vectorizer.transform(test_data["processed"].values)
 
-        train_df = pd.DataFrame(X_train_tfidf.toarray(), columns=vectorizer.get_feature_names_out())
+        train_df = pd.DataFrame(X_train_bow.toarray(), columns=vectorizer.get_feature_names_out())
         train_df["label"] = train_data["sentiment"].values
 
-        test_df = pd.DataFrame(X_test_tfidf.toarray(), columns=vectorizer.get_feature_names_out())
+        test_df = pd.DataFrame(X_test_bow.toarray(), columns=vectorizer.get_feature_names_out())
         test_df["label"] = test_data["sentiment"].values
 
-        logger.debug("✅ TF-IDF features created.")
+        logger.debug("✅ Bag of Words features created.")
         return train_df, test_df
     except Exception as e:
-        logger.error(f"❌ Error creating TF-IDF features: {e}")
+        logger.error(f"❌ Error creating BoW features: {e}")
         raise
 
 
 def save_features(train_df: pd.DataFrame, test_df: pd.DataFrame, data_path: str = "data/features") -> None:
-    """Save TF-IDF features to CSV"""
+    """Save BoW features to CSV"""
     try:
         os.makedirs(data_path, exist_ok=True)
-        train_df.to_csv(os.path.join(data_path, "train_tfidf.csv"), index=False)   # ⬅️ renamed output
-        test_df.to_csv(os.path.join(data_path, "test_tfidf.csv"), index=False)     # ⬅️ renamed output
+        train_df.to_csv(os.path.join(data_path, "train_bow.csv"), index=False)
+        test_df.to_csv(os.path.join(data_path, "test_bow.csv"), index=False)
         logger.debug("✅ Features saved successfully.")
     except Exception as e:
         logger.error(f"❌ Failed to save features: {e}")
@@ -104,9 +104,9 @@ def main():
     try:
         max_features = load_params("params.yaml")
         train_data, test_data = load_data()
-        train_df, test_df = create_tfidf_features(train_data, test_data, max_features)
+        train_df, test_df = create_bow_features(train_data, test_data, max_features)
         save_features(train_df, test_df)
-        logger.info("✅ Feature engineering pipeline completed successfully (TF-IDF).")
+        logger.info("✅ Feature engineering pipeline completed successfully.")
     except Exception as e:
         logger.critical(f"🔥 Feature engineering pipeline failed: {e}")
 

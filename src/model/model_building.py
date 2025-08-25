@@ -45,7 +45,7 @@ def load_params(params_path: str) -> dict:
 def load_training_data(train_path: str):
     """Load training data from CSV"""
     try:
-        logger.info(f"📂 Loading training data from {train_path}")
+        logger.info(f"Loading training data from {train_path}")
         train_data = pd.read_csv(train_path)
 
         X_train = train_data.iloc[:, :-1].values
@@ -61,11 +61,10 @@ def load_training_data(train_path: str):
 def train_model(X_train, y_train, params: dict):
     """Train GradientBoosting model"""
     try:
-        logger.info("⚡ Training GradientBoostingClassifier model...")
+        logger.info("Training GradientBoostingClassifier model...")
         clf = GradientBoostingClassifier(
             n_estimators=params.get("n_estimators", 100),
-            learning_rate=params.get("learning_rate", 0.1),
-            max_depth=params.get("max_depth", 3)
+            learning_rate=params.get("learning_rate", 0.1)
         )
         clf.fit(X_train, y_train)
         logger.info("✅ Model training completed")
@@ -92,11 +91,10 @@ def save_model(model, model_path: str):
 def main():
     try:
         params = load_params("params.yaml")
-        # ⬅️ Changed file to TF-IDF features
-        X_train, y_train = load_training_data("data/features/train_tfidf.csv")
+        X_train, y_train = load_training_data("data/features/train_bow.csv")
         model = train_model(X_train, y_train, params)
         save_model(model, "models/model.pkl")
-        logger.info("🎯 Model building pipeline completed successfully (TF-IDF).")
+        logger.info("🎯 Model building pipeline completed successfully.")
     except Exception as e:
         logger.critical(f"🔥 Pipeline failed: {e}")
 
